@@ -6,7 +6,7 @@ client=Groq(api_key=GROQ_API_KEY)
 
 def generate_answer(query:str,context_chunks:List[Dict])->str:
     context=""
-    for i, chunk in enumerate(contect_chunks):
+    for i, chunk in enumerate(context_chunks):
         page =chunk["metadata"]["page_number"]
         context += f"\n[Source {i+1} -Page {page}]:\n{chunk['text']}\n"
 
@@ -24,6 +24,6 @@ def generate_answer(query:str,context_chunks:List[Dict])->str:
             {"role":"user","content":user_prompt}
         ],
         temperature=0.2,
-        max_toxens=1024
+        max_tokens=1024
     )
     return response.choices[0].message.content

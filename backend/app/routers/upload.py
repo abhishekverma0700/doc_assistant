@@ -25,6 +25,8 @@ async def uplaod_document(file:UploadFile =File(...)):
             shutil.copyfileobj(file.file,buffer)
 
         pages =extract_text_from_pdf(file_path)
+        print(f"Pages extracted: {len(pages)}")
+        print(f"First page sample: {pages[0] if pages else 'EMPTY'}")
         if not pages:
             raise HTTPException(status_code=400,detail="Could not extract text from Pdf ")
             
@@ -37,13 +39,15 @@ async def uplaod_document(file:UploadFile =File(...)):
             "total_chunks":len(chunks),
             "file_path":file_path
         }
-        return UplaodResponse(
+        return UploadResponse(
             message="Document uplaod and processed Succsfully",
             doc_id=doc_id,
             filename=file.filename,
             total_chunks=len(chunks)
                )
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/documents")
