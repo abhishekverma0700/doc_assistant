@@ -15,20 +15,21 @@ def store_embeddings(doc_id: str, chunks:List[Dict]):
 
     embeddings = model.encode(texts).tolist()
 
-    ids = [f"{doc_id}_chunk_{chunk['chunk_id']}" for chunk in chunks]
+    ids = [f"{doc_id}_chunk_{c['chunk_id']}" for c in chunks]
     metadatas = [
         {
-            "page_number": chunk["page_number"],
+            "page_number": c["page_number"],
             "doc_id":doc_id,
-            "chunk_id": chunk["chunk_id"]
+            "chunk_id": c["chunk_id"]
         }
+         for c in chunks
     ]
 
     collection.add(
         documents=texts,
-        embedings=embeddings,
+        embeddings=embeddings,
         ids=ids,
-        metadats=metadatas
+        metadatas=metadatas
     )
     
     print(f"stored {len(chunks)} chunks fro document: {doc_id}")
