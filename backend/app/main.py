@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import upload, chat
 
 app=FastAPI(
-    title="GENI Document Assistant",
+    title="GENAI Document Assistant",
     description="RAG-based Documant Q&A chatbot",
     version="1.0.0"
 )

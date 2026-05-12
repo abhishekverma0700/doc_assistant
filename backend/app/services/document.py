@@ -1,4 +1,5 @@
 import fitz
+import docx 
 from typing import List, Dict
 def extract_text_from_pdf(file_path:str)->List[Dict]:
     pages=[]
@@ -14,6 +15,42 @@ def extract_text_from_pdf(file_path:str)->List[Dict]:
             })
     doc.close()
     return pages
+def extract_text_from_docx(file_path: str) -> List[Dict]:
+    doc = docx.Document(file_path)
+    full_text = ""
+
+    for para in doc.paragraphs:
+        if para.text.strip():
+            full_text += para.text.strip() + "\n"
+
+    if not full_text.strip():
+        return []
+
+    
+    return [{"page_number": 1, "text": full_text.strip()}]
+
+
+def extract_text_from_txt(file_path: str) -> List[Dict]:
+    """Extract text from a TXT file"""
+    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+        text = f.read().strip()
+
+    if not text:
+        return []
+
+    return [{"page_number": 1, "text": text}]
+
+
+def extract_text(file_path: str, filename: str) -> List[Dict]:
+    if filename.endswith(".pdf"):
+        return extract_text_from_pdf(file_path)
+    elif filename.endswith(".docx"):
+        return extract_text_from_docx(file_path)
+    elif filename.endswith(".txt"):
+        return extract_text_from_txt(file_path)
+    else:
+        return []
+
 def chunk_text(pages: list[dict],chunk_size: int=500, overlap:int=50)-> List[Dict]:
     chunks=[]
     chunk_id = 0
