@@ -20,4 +20,4 @@ app.include_router(chat.router, tags=["Chat"])
 
 @app.get("/health", tags=["Health"])
 async def health_check():
-    return {"status":"ok", "message":"Serv is running!"}
+    return {"status":"ok", "message":"Server is running!"}
