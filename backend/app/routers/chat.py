@@ -23,8 +23,8 @@ async def ask_question(request: AskRequest):
                 sources=[]
             )
 
-        recent_history = (request.history or [])[-10:]
-        answer = generate_answer(request.question, chunks, recent_history)
+        # Pass history for conversation memory
+        answer = generate_answer(request.question, chunks, request.history or [])
 
         sources = [
             ChunkSource(

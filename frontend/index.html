@@ -688,7 +688,7 @@
       body: JSON.stringify({
         question: question,
         doc_ids: uploadedDocs.map(d => d.doc_id),
-        history: conversationHistory.slice(-10),
+        history: conversationHistory.slice(-8), // last 4 Q&A pairs
       }),
     });
 
@@ -701,9 +701,6 @@
     // Add to history AFTER getting response
     conversationHistory.push({ role: "user", content: question });
     conversationHistory.push({ role: "assistant", content: data.answer });
-    if (conversationHistory.length > 10) {
-      conversationHistory = conversationHistory.slice(-10);
-    }
 
   } catch (err) {
     document.getElementById("loading-msg")?.remove();
@@ -712,6 +709,41 @@
 
   document.getElementById("send-btn").disabled = false;
 }
+      // Show loading
+      const loadingDiv = document.createElement("div");
+      loadingDiv.className = "message-wrapper assistant";
+      loadingDiv.id = "loading-msg";
+      loadingDiv.innerHTML = `<div class="loading-bubble">⏳ Thinking...</div>`;
+      document.getElementById("messages").appendChild(loadingDiv);
+      scrollToBottom();
+
+      document.getElementById("send-btn").disabled = true;
+
+      try {
+        const res = await fetch(`${API}/ask`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: question,
+            doc_ids: uploadedDocs.map(d => d.doc_id),
+            history: conversationHistory.slice(-6),
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Error getting answer");
+
+        document.getElementById("loading-msg")?.remove();
+        addMessage("assistant", data.answer);
+        conversationHistory.push({ role: "assistant", content: data.answer });
+
+      } catch (err) {
+        document.getElementById("loading-msg")?.remove();
+        addMessage("assistant", `❌ Error: ${err.message}`);
+      }
+
+      document.getElementById("send-btn").disabled = false;
+    }
 
     // =====================
     // CLEAR CHAT
