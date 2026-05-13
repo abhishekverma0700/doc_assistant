@@ -35,4 +35,4 @@ class LoginResponse(BaseModel):
 class AskRequest(BaseModel):
     question:str
     doc_ids:List[str]
-    history:Optional[List[dict]] = []
+    history:Optional[List[dict]] = None
