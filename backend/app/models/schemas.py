@@ -5,11 +5,7 @@ class DocumentInfo(BaseModel):
     doc_id: str
     filename: str
     total_chunks: int
-
-class AskRequest(BaseModel):
-    question: str
-    doc_ids: List[str]
-
+    
 class ChunkSource(BaseModel):
     doc_id: str
     page_number: int
@@ -28,3 +24,15 @@ class UploadResponse(BaseModel):
 class DeleteResponse(BaseModel):
     message: str
     doc_id: str
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+class LoginResponse(BaseModel):
+    success:bool
+    message:str
+    token:str
+class AskRequest(BaseModel):
+    question:str
+    doc_ids:List[str]
+    history:Optional[List[dict]] = []

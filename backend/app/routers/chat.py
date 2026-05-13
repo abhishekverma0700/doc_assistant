@@ -6,7 +6,6 @@ import traceback
 
 router = APIRouter()
 
-
 @router.post("/ask", response_model=AskResponse)
 async def ask_question(request: AskRequest):
     if not request.question.strip():
@@ -16,9 +15,7 @@ async def ask_question(request: AskRequest):
         raise HTTPException(status_code=400, detail="Please provide at least one document ID")
 
     try:
-        # Retrieve relevant chunks
         chunks = retrieve_relevant_chunks(request.question, request.doc_ids)
-        print(f"Retrieved chunks: {len(chunks)}")  # DEBUG
 
         if not chunks:
             return AskResponse(
@@ -26,11 +23,9 @@ async def ask_question(request: AskRequest):
                 sources=[]
             )
 
-        # Generate answer using LLM
-        answer = generate_answer(request.question, chunks)
-        print(f"Answer generated: {answer[:100]}")  # DEBUG
+        # Pass history for conversation memory
+        answer = generate_answer(request.question, chunks, request.history or [])
 
-        # Build sources list
         sources = [
             ChunkSource(
                 doc_id=chunk["metadata"]["doc_id"],
@@ -43,5 +38,5 @@ async def ask_question(request: AskRequest):
         return AskResponse(answer=answer, sources=sources)
 
     except Exception as e:
-        traceback.print_exc()  # Full error in terminal
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
