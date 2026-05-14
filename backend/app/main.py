@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import upload, chat
+from app.routers import upload, chat, auth
 
 app=FastAPI(
     title="GENAI Document Assistant",
@@ -15,6 +15,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(auth.router)
 app.include_router(upload.router, tags=["Documents"])
 app.include_router(chat.router, tags=["Chat"])
 

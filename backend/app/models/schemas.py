@@ -6,9 +6,16 @@ class DocumentInfo(BaseModel):
     filename: str
     total_chunks: int
 
+
+class ConversationTurn(BaseModel):
+    question: str
+    answer: str
+
 class AskRequest(BaseModel):
     question: str
     doc_ids: List[str]
+    session_id: Optional[str] = None
+    history: Optional[List[ConversationTurn]] = None
 
 class ChunkSource(BaseModel):
     doc_id: str
@@ -18,6 +25,7 @@ class ChunkSource(BaseModel):
 class AskResponse(BaseModel):
     answer: str
     sources: List[ChunkSource]
+    session_id: str
 
 class UploadResponse(BaseModel):
     message: str
