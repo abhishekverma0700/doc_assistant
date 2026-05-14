@@ -5,3 +5,11 @@ __pycache__/
 chroma_db/
 node_modules/
 .DS_Store
+backend/uploads/
+backend/chromadb/
+backend/users.db
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
