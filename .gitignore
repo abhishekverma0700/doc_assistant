@@ -1,10 +1,11 @@
-.env
-venv/
-__pycache__/
-*.pyc
-chroma_db/
-node_modules/
-.DS_Store
+
+echo backend/chromadb/ >> .gitignore
+echo backend/uploads/ >> .gitignore
+echo backend/users.db >> .gitignore
+echo backend/venv/ >> .gitignore
+echo __pycache__/ >> .gitignore
+echo *.pyc >> .gitignore
+echo .env >> .gitignore
 backend/uploads/
 backend/chromadb/
 backend/users.db
