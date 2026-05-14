@@ -1,0 +1,11 @@
+cd D:\doc-assistant\genai-doc-assistant\backend
+echo fastapi > requirements.txt
+echo uvicorn >> requirements.txt
+echo python-multipart >> requirements.txt
+echo python-dotenv >> requirements.txt
+echo sentence-transformers >> requirements.txt
+echo chromadb >> requirements.txt
+echo numpy >> requirements.txt
+echo PyMuPDF >> requirements.txt
+echo python-docx >> requirements.txt
+echo groq >> requirements.txt

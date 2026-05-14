@@ -1,0 +1,12 @@
+cat > requirements.txt << 'EOF'
+fastapi
+uvicorn
+python-multipart
+python-dotenv
+sentence-transformers
+faiss-cpu
+numpy
+PyMuPDF
+python-docx
+groq
+EOF

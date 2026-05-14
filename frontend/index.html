@@ -520,6 +520,158 @@
       transform: translateY(0px);
     }
 
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+        height: 100dvh;
+        overflow: hidden;
+      }
+
+      #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: min(84vw, 320px);
+        transform: translateX(-100%);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 30;
+      }
+
+      #chat-area {
+        width: 100%;
+        min-width: 0;
+        flex: 1;
+      }
+
+      #chat-header {
+        padding: 16px 20px 16px 56px;
+        font-size: 14px;
+        line-height: 1.4;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+      }
+
+      #chat-header::before {
+        content: "☰";
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(99, 102, 241, 0.12);
+        color: #c7d2fe;
+        font-size: 20px;
+        line-height: 1;
+        border: 1px solid rgba(99, 102, 241, 0.18);
+      }
+
+      #messages {
+        padding: 16px;
+        gap: 12px;
+      }
+
+      .bubble,
+      .loading-bubble {
+        max-width: 90%;
+        font-size: 15px;
+        line-height: 1.55;
+        padding: 12px 14px;
+      }
+
+      #input-area {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+      }
+
+      #question-input {
+        width: 100%;
+        min-height: 56px;
+        font-size: 16px;
+        padding: 14px 16px;
+      }
+
+      #send-btn,
+      #login-btn,
+      #logout-btn,
+      #upload-box {
+        min-height: 44px;
+      }
+
+      #send-btn,
+      #login-btn,
+      #logout-btn {
+        width: 100%;
+        font-size: 15px;
+        padding: 14px 16px;
+      }
+
+      #upload-section,
+      #doc-list-section {
+        padding: 18px;
+      }
+
+      #logo {
+        padding: 18px;
+        font-size: 18px;
+      }
+
+      #upload-box {
+        padding: 22px 18px;
+        font-size: 14px;
+      }
+
+      .doc-item {
+        padding: 14px;
+        font-size: 14px;
+      }
+
+      .doc-chunks,
+      .sources-title,
+      .source-label,
+      .source-preview,
+      #upload-status,
+      #login-error,
+      .form-group label {
+        font-size: 13px;
+      }
+
+      .login-container {
+        width: calc(100% - 24px);
+        max-width: none;
+        padding: 28px 20px;
+        border-radius: 18px;
+      }
+
+      .login-title {
+        font-size: 28px;
+        margin-bottom: 24px;
+      }
+
+      .login-form {
+        gap: 14px;
+      }
+
+      .form-group input {
+        min-height: 44px;
+        font-size: 16px;
+        padding: 12px 14px;
+      }
+
+      #login-btn {
+        margin-top: 4px;
+      }
+    }
+
     /* ===== SCROLLBAR ===== */
     ::-webkit-scrollbar {
       width: 6px;
@@ -556,6 +708,7 @@
         </div>
         <div id="login-error"></div>
         <button type="button" id="login-btn">Login</button>
+        <button type="button" id="register-btn" style="background:transparent;border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;border-radius:10px;padding:14px;cursor:pointer;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;transition:all 0.3s ease;">Register</button>
       </form>
     </div>
   </div>
@@ -602,16 +755,37 @@
 
   <script>
     const uploadedDocs = [];
-    const API = "http://116.202.210.102:20380";
+    const API = "http://127.0.0.1:8000";
     let sessionId = null;
     let token = localStorage.getItem("token");
 
+    function getAuthToken() {
+      return localStorage.getItem("token") || "demo-token-123:demo";
+    }
+
     // Initialize app based on token state
-    function initApp() {
+    async function initApp() {
+      const token = localStorage.getItem("token");
       if (token) {
         document.getElementById("login-screen").classList.add("hidden");
-      } else {
-        document.getElementById("login-screen").classList.remove("hidden");
+        try {
+          const res = await fetch(`${API}/documents`, {
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (res.ok && data.documents) {
+            data.documents.forEach(doc => {
+              uploadedDocs.push(doc.doc_id);
+              const docList = document.getElementById("doc-list");
+              const item = document.createElement("div");
+              item.className = "doc-item";
+              item.innerHTML = `<span>${doc.filename}</span><span class="doc-chunks">${doc.total_chunks} chunks</span>`;
+              docList.appendChild(item);
+            });
+          }
+        } catch (err) {
+          console.error("Failed to load documents:", err);
+        }
       }
     }
 
@@ -620,36 +794,24 @@
       const username = document.getElementById("login-username").value.trim();
       const password = document.getElementById("login-password").value.trim();
       const errorDiv = document.getElementById("login-error");
-
-      if (!username || !password) {
-        errorDiv.textContent = "Please enter username and password";
-        return;
-      }
-
+      if (!username || !password) { errorDiv.textContent = "Please enter username and password"; return; }
       document.getElementById("login-btn").disabled = true;
-
       try {
-        const res = await fetch(`${API}/auth/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`, {
+        const res = await fetch(`${API}/auth/login`, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
         });
-
         const data = await res.json();
-
-        if (!res.ok) {
-          errorDiv.textContent = data.detail || "Login failed";
-          document.getElementById("login-btn").disabled = false;
-          return;
-        }
-
-        token = data.access_token;
-        localStorage.setItem("token", token);
+        if (!res.ok) { errorDiv.textContent = data.detail || "Login failed"; document.getElementById("login-btn").disabled = false; return; }
+        const uname = data.username || username;
+        localStorage.setItem("token", `demo-token-123:${uname}`);
+        localStorage.setItem("username", uname);
         errorDiv.textContent = "";
-        document.getElementById("login-username").value = "";
-        document.getElementById("login-password").value = "";
+        document.getElementById("login-btn").disabled = false;
         document.getElementById("login-screen").classList.add("hidden");
-
+        initApp();
       } catch (err) {
-        console.error("Login error:", err);
         errorDiv.textContent = "Connection error";
         document.getElementById("login-btn").disabled = false;
       }
@@ -665,6 +827,7 @@
 
       token = null;
       localStorage.removeItem("token");
+  localStorage.removeItem("username");
       document.getElementById("login-screen").classList.remove("hidden");
       document.getElementById("question-input").value = "";
       uploadedDocs.length = 0;
@@ -680,6 +843,30 @@
 
     // Initialize on page load
     initApp();
+
+    document.getElementById("register-btn").addEventListener("click", async () => {
+      const username = document.getElementById("login-username").value.trim();
+      const password = document.getElementById("login-password").value.trim();
+      const errorDiv = document.getElementById("login-error");
+      if (!username || !password) { errorDiv.textContent = "Please enter username and password"; return; }
+      if (password.length < 4) { errorDiv.textContent = "Password must be at least 4 characters"; return; }
+      document.getElementById("register-btn").disabled = true;
+      try {
+        const res = await fetch(`${API}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) { errorDiv.textContent = data.detail || "Registration failed"; document.getElementById("register-btn").disabled = false; return; }
+        errorDiv.style.color = "#10b981";
+        errorDiv.textContent = "Registered! Now login.";
+        document.getElementById("register-btn").disabled = false;
+      } catch (err) {
+        errorDiv.textContent = "Connection error";
+        document.getElementById("register-btn").disabled = false;
+      }
+    });
 
     
     document.getElementById("file-input").addEventListener("change", async (e) => {
@@ -705,6 +892,7 @@
       try {
         const res = await fetch(`${API}/upload`, {
           method: "POST",
+          headers: { "Authorization": `Bearer ${getAuthToken()}` },
           body: formData,
         });
 
